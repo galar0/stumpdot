@@ -1,0 +1,4 @@
+clear mod4
+keycode 133 = F20
+keycode 66 = F20
+clear lock

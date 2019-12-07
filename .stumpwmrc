@@ -1,0 +1,88 @@
+(in-package :stumpwm)
+(ql:quickload :swank)
+(swank:create-server)
+
+;; setup wallpaper background
+(run-shell-command "feh --bg-scale '/home/leef/Pictures/soc-garde.jpg'")
+(run-shell-command "compton")
+
+(defvar *main-font* "-xos4-terminus-medium-r-normal--32-320-72-72-c-160-*-*")
+(defvar *gamma-temp* 6500)
+
+(load-module "swm-gaps")
+(load-module "amixer")
+(load-module "battery-portable")
+(load-module "cpu")
+(load-module "mem")
+;(load-module "net")
+(load-module "wifi")
+(load-module "urgentwindows")
+
+(defcommand inc-brightness () ()
+  (run-shell-command "pkexec /usr/bin/brillo -A 1"))
+
+(defcommand dec-brightness () ()
+  (run-shell-command "pkexec /usr/bin/brillo -U 1"))
+
+(defcommand inc-temp () ()
+  (setf *gamma-temp* (+ *gamma-temp* 200))
+  (run-shell-command (format nil "iris-flower 100 ~a" *gamma-temp*)))
+
+(defcommand dec-temp () ()
+  (setf *gamma-temp* (- *gamma-temp* 200))
+  (run-shell-command (format nil  "iris-flower 100 ~a" *gamma-temp*)))
+
+
+(setf swm-gaps:*inner-gaps-size* 10
+      swm-gaps:*outer-gaps-size* 10
+      swm-gaps:*head-gaps-size* 10)
+
+
+(define-key *top-map* (kbd "XF86MonBrightnessUp") "inc-brightness")
+(define-key *top-map* (kbd "XF86MonBrightnessDown") "dec-brightness")
+(define-key *root-map* (kbd "XF86MonBrightnessDown") "dec-temp")
+(define-key *root-map* (kbd "XF86MonBrightnessUp") "inc-temp")
+
+(define-key *top-map* (kbd "XF86AudioLowerVolume") "amixer-Master-1-")
+(define-key *top-map* (kbd "XF86AudioRaiseVolume") "amixer-Master-1+")
+(define-key *top-map* (kbd "XF86AudioMute") "amixer-Master-toggle pulse")
+
+(setf *mouse-focus-policy* :click
+      *input-window-gravity* :center
+      *mode-line-border-color* "#333333"
+      *mode-line-border-width* 1
+      *mode-line-pad-x* 6
+      *mode-line-pad-y* 1)
+
+(set-prefix-key (kbd "F20"))
+(set-font *main-font*)
+(defcommand colon1 (&optional (initial "")) (:rest)
+  (let ((cmd (read-one-line (current-screen) ": " :initial-input initial)))
+    (when cmd
+      (eval-command cmd t))))
+
+
+(define-key *root-map* (kbd "b") "exec brave")
+(define-key *root-map* (kbd "M-s") "colon1 exec brave duckduckgo.com/?q=")
+(define-key *root-map* (kbd "c") "exec mate-terminal")
+(define-key *root-map* (kbd "z") "send-escape")
+(define-key *root-map* (kbd "M-q") "quit")
+(define-key *root-map* (kbd "SPC") "exec dmenu_run -fn 'Droid Sans Mono-24'")
+(define-key *root-map* (kbd "M-w") "global-windowlist")
+(define-key *root-map* (kbd "C-w") "global-pull-windowlist")
+(define-key *root-map* (kbd "M-m") "mode-line")
+
+(grename "I")
+(gnewbg "II")
+(gnewbg "III")
+(gnewbg "IV")
+(gnewbg "V")
+
+(setf *screen-mode-line-format*
+      (list "%g %v ^>^6 %M | %C | %I | %B bat | "
+            '(:eval (stumpwm:run-shell-command "date" t))))
+
+
+(toggle-mode-line (current-screen)
+                  (current-head))
+
